@@ -1,4 +1,4 @@
-<project name="goobi-plugin-export-hu" default="devbuild">
+<project name="goobi-plugin-export-cbl" default="devbuild">
 	<target name="devbuild">
 		<exec executable="mvn">
 			<arg value="package"/>
