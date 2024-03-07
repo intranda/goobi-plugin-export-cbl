@@ -7,7 +7,7 @@
     <relativePath />
   </parent>
   <groupId>io.goobi.workflow.plugin</groupId>
-  <artifactId>plugin-export-goobi-plugin-export-cbl</artifactId>
+  <artifactId>plugin-export-cbl</artifactId>
   <packaging>pom</packaging>
   <modules>
     <module>module-base</module>

@@ -2,9 +2,9 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>io.goobi.workflow.plugin</groupId>
-    <artifactId>plugin-export-goobi-plugin-export-cbl</artifactId>
+    <artifactId>plugin-export-cbl</artifactId>
     <version>24.03-SNAPSHOT</version>
   </parent>
-  <artifactId>plugin-export-goobi-plugin-export-cbl-base</artifactId>
+  <artifactId>plugin-export-cbl-base</artifactId>
   <packaging>jar</packaging>
 </project>
