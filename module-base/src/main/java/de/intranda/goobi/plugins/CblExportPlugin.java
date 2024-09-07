@@ -1,10 +1,13 @@
 package de.intranda.goobi.plugins;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.apache.commons.io.FilenameUtils;
 import org.goobi.beans.Process;
 import org.goobi.beans.ProjectFileGroup;
 import org.goobi.beans.User;
@@ -74,10 +77,17 @@ public class CblExportPlugin extends ExportDms implements IExportPlugin, IPlugin
             }
 
             /* jetzt den eigentlichen Kopiervorgang */
-            List<Path> files = StorageProvider.getInstance().listFiles(myProzess.getImagesTifDirectory(false), NIOFileUtils.DATA_FILTER);
+            DirectoryStream.Filter<Path> dataOrBinFilter = path -> {
+                return StorageProvider.dataFilterString(path.toString()) || path.toString().matches("(?i).*\\.bin");
+            };
+            List<Path> files = StorageProvider.getInstance().listFiles(myProzess.getImagesTifDirectory(false), dataOrBinFilter);
             for (Path file : files) {
                 Path target = Paths.get(zielTif.toString(), file.getFileName().toString());
                 StorageProvider.getInstance().copyFile(file, target);
+                //for 3d object files look for "helper files" with the same base name and copy them as well
+                if (NIOFileUtils.objectNameFilter.accept(file)) {
+                    copy3DObjectHelperFiles(myProzess, zielTif, file);
+                }
             }
         }
 
@@ -99,6 +109,26 @@ public class CblExportPlugin extends ExportDms implements IExportPlugin, IPlugin
                         }
                     }
                 }
+            }
+        }
+    }
+
+    public void copy3DObjectHelperFiles(Process myProzess, Path zielTif, Path file)
+            throws IOException, InterruptedException, SwapException, DAOException {
+        Path tiffDirectory = Paths.get(myProzess.getImagesTifDirectory(true));
+        String baseName = FilenameUtils.getBaseName(file.getFileName().toString());
+        List<Path> helperFiles = StorageProvider.getInstance()
+                .listDirNames(tiffDirectory.toString())
+                .stream()
+                .filter(dirName -> dirName.equals(baseName))
+                .map(tiffDirectory::resolve)
+                .collect(Collectors.toList());
+        for (Path helperFile : helperFiles) {
+            Path helperTarget = Paths.get(zielTif.toString(), helperFile.getFileName().toString());
+            if (StorageProvider.getInstance().isDirectory(helperFile)) {
+                StorageProvider.getInstance().copyDirectory(helperFile, helperTarget);
+            } else {
+                StorageProvider.getInstance().copyFile(helperFile, helperTarget);
             }
         }
     }
